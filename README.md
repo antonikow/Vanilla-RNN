@@ -1,0 +1,2 @@
+Vanilla RNN classification with pytorch on AG_NEWS dataset. Model achives almost the same accuracy as Vanilla RNN in the paper [Recurrent Neural Network for Text Classification with Hierarchical Multiscale
+Dense Connections](https://www.ijcai.org/Proceedings/2019/0757.pdf). Implemented model is much faster than RNN from pytorch, however for this dataset it is much better to use architectures like stacked Vanilla RNN or especially LSTM.
