@@ -16,7 +16,7 @@ hidden_size =  128
 max_words = 25 
 lr = 0.001 
 output_size = 4
-dropout = 0.01 # 0.03
+dropout = 0.01 
 
 
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -26,7 +26,7 @@ if not isExist:
    os.makedirs(path)
    print("The new directory is created!")
 
-train_iter, test_iter = torchtext.datasets.AG_NEWS(split=('train', 'test'))
+train_iter, test_iter = torchtext.datasets.AG_NEWS(root="data", split=('train', 'test'))
 train_set = to_map_style_dataset(train_iter)
 test_set = to_map_style_dataset(test_iter)
 tokenizer = get_tokenizer("basic_english")
@@ -176,28 +176,27 @@ list_of_files = glob.glob('models/*')
 latest_file = max(list_of_files, key=os.path.getctime)
 
 # load the model
-
 loaded_model = RNN(embed_size, hidden_size, output_size, dropout)
 loaded_model.load_state_dict(torch.load(latest_file))
 loaded_model.eval()
      
-vcorrect = 0.
-vloss = 0.
+# TEST
+test_correct = 0.
+test_loss = 0.
 with torch.no_grad():
     for i, data in enumerate(test_loader):
                 X, y = data
                 embedded = embedding(X)
                 
-                h = model.init_hidden(batch_size)
+                h = loaded_model.init_hidden(batch_size)
                 for seq in range(max_words):
                     h = loaded_model(embedded[:, seq,:], h)
                 output = loaded_model.lin(h)
-                vloss += loss_fn(output, y).item()
+                test_loss += loss_fn(output, y).item()
                 _, predicted = torch.max(output, 1)
-                vcorrect += (predicted == y).sum().item()
+                test_correct += (predicted == y).sum().item()
                 
-    # calculate validation accuracy, loss and save the model
-    print(len(test_loader))
-    accuracy = vcorrect/len(test_set) * 100
-    avg_vloss = vloss/len(test_set)
-    print("validation accuracy:", accuracy, "%", "avg_vloss:", avg_vloss)
+    # calculate test accuracy and loss 
+    accuracy = test_correct/len(test_set) * 100
+    avg_testloss = test_loss/len(test_set)
+    print("test accuracy:", accuracy, "%", "avg_testloss:", avg_testloss)
