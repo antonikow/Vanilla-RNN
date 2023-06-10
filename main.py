@@ -16,7 +16,7 @@ hidden_size =  128
 max_words = 25 
 lr = 0.001 
 output_size = 4
-dropout = 0.01 
+dropout = 0.0 
 
 
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -87,14 +87,13 @@ for x in X[:2]:
 embedding = torch.nn.Embedding(vocab_size, embed_size)
 
 class RNN(nn.Module):
-  def __init__(self, input_size, hidden_size, output_size, dropout):
+  def __init__(self, input_size, hidden_size, output_size):
     super().__init__()
     self.hidden_size = hidden_size
     combined = input_size + hidden_size
     self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
     self.tanh = nn.Tanh()
     self.relu = nn.ReLU()
-    self.dropout = nn.Dropout(dropout)
     self.lin1 = nn.Linear(hidden_size, output_size)
     
   def init_hidden(self, batch_size):
@@ -106,9 +105,7 @@ class RNN(nn.Module):
 
   def forward(self, x, h):
     combined = torch.cat((x, h), 1)
-    combined = self.dropout(combined)
     next_h = self.tanh(self.i2h(combined)) 
-    next_h = self.dropout(next_h)
     return next_h
  
 model = RNN(embed_size, hidden_size, output_size, dropout)
@@ -116,11 +113,12 @@ optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 loss_fn = nn.CrossEntropyLoss()
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience = 2, verbose = True)
 
-n_epochs = 30
+n_epochs = 35
 best_vloss = 1_000_000.
 
 for epoch in range(n_epochs):
     # TRAINING
+    model.train()
     tcorrect = 0.
     for i, data in enumerate(train_loader):
         X, y = data
