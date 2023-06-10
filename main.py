@@ -16,7 +16,6 @@ hidden_size =  128
 max_words = 25 
 lr = 0.001 
 output_size = 4
-dropout = 0.0 
 
 
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -108,7 +107,7 @@ class RNN(nn.Module):
     next_h = self.tanh(self.i2h(combined)) 
     return next_h
  
-model = RNN(embed_size, hidden_size, output_size, dropout)
+model = RNN(embed_size, hidden_size, output_size)
 optimizer = torch.optim.Adam(model.parameters(), lr = lr) 
 loss_fn = nn.CrossEntropyLoss()
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience = 2, verbose = True)
@@ -174,7 +173,7 @@ list_of_files = glob.glob('models/*')
 latest_file = max(list_of_files, key=os.path.getctime)
 
 # load the model
-loaded_model = RNN(embed_size, hidden_size, output_size, dropout)
+loaded_model = RNN(embed_size, hidden_size, output_size)
 loaded_model.load_state_dict(torch.load(latest_file))
 loaded_model.eval()
      
